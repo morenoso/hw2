@@ -41,7 +41,6 @@ public:
 
     //if username invalid return false
     //if username valid, iterate through queue
-    //may go to sleep so here's my idea before i forget
 
     //1)make a new queue
     //2)as we iterate with (front() and pop()) if the item is NOT being removed fromt he cart
@@ -56,6 +55,7 @@ public:
     void clearUsers();
 
     void clearProducts();
+    
 private:
     std::vector<Product*> products;
     std::vector<User*> users;

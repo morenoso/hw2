@@ -19,15 +19,16 @@ std::set<std::string> parseStringToWords(string rawWords)
     int count = 0;
     for(int i = 0; i < (int)rawWords.size(); ++i){
       int asciiCheck = (int)rawWords[i];
-      //cout << asciiCheck << endl;
       if((asciiCheck < 65 || (asciiCheck>90 && asciiCheck < 97)
         || asciiCheck > 122) && count >= 2){
-        //cout << rawWords.substr(i-count,count) << endl;
         words.insert(convToLower(rawWords.substr(i - count, count)));
         count = 0;
       }else if ((asciiCheck < 65 || (asciiCheck>90 && asciiCheck < 97)
       || asciiCheck > 122) && count < 2){
         count = 0;
+      }else if(!((asciiCheck < 65 || (asciiCheck>90 && asciiCheck < 97)
+        || asciiCheck > 122)) && i == (int)rawWords.size()-1 && count >= 1){
+        words.insert(convToLower(rawWords.substr(i-count,count+1)));
       }else{
         count++;
       }

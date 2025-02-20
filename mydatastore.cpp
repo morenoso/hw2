@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <string>
 #include "mydatastore.h"
 #include "util.h"
 
 void MyDataStore::addProduct(Product* p){
-    //not done yet, check again, have to shower right now
 
 
     //set of keywords that our product has
@@ -15,14 +15,15 @@ void MyDataStore::addProduct(Product* p){
     //iterate through each keyword
     for(std::set<std::string>::iterator it = keywords.begin(); it!= keywords.end(); ++it){
         //if keyword isn't in our mapping
-        if(keyWordProdMapping.find(*it) == keyWordProdMapping.end()){
+        //std::cout << convToLower(*it) << std::endl;
+        if(keyWordProdMapping.find(convToLower(*it)) == keyWordProdMapping.end()){
             //add our new keyword and product to the mapping
             std::set<Product*> keyProds;
             keyProds.insert(p);
-            keyWordProdMapping.insert(make_pair(*it, keyProds));
+            keyWordProdMapping.insert(make_pair(convToLower(*it), keyProds));
         }else{
             //if keyword is in the mapping, just add the product to the vector that belongs to the keyword
-            keyWordProdMapping.find(*it)->second.insert(p);
+            keyWordProdMapping.find(convToLower(*it))->second.insert(p);
         }
     }
     products.push_back(p);
@@ -42,6 +43,7 @@ void MyDataStore::addUser(User* u){
 std::vector<Product*> MyDataStore::search(std::vector<std::string>& terms, int type){
     std::vector<Product*> results;
     std::set<Product*> firstSet;
+    std::set<Product*> secondSet;
     //AND search
     if(type == 0)
     {
@@ -49,10 +51,22 @@ std::vector<Product*> MyDataStore::search(std::vector<std::string>& terms, int t
         for(size_t i = 0; i < terms.size(); i++){
             if(i==0){
                 //get a set of products that belong to our first term
-                firstSet = keyWordProdMapping.find(terms[i])->second;
-            }else{
+                //add check for null, that's a problem
+                if(keyWordProdMapping.find(terms[i]) != keyWordProdMapping.end()) {
+                    firstSet = keyWordProdMapping.find(terms[i])->second;
+                }else{
+                    std::set<Product*> emptySet;
+                    firstSet = emptySet;
+                }
+            }else{ 
                 //get the set that has the products found under the i-1 term and i/current term
-                firstSet = setIntersection(firstSet,keyWordProdMapping.find(terms[i])->second);
+                if(keyWordProdMapping.find(terms[i]) != keyWordProdMapping.end()) {
+                    secondSet = keyWordProdMapping.find(terms[i])->second;
+                }else{
+                    std::set<Product*> emptySet;
+                    secondSet = emptySet;
+                }
+                firstSet = setIntersection(firstSet,secondSet);
             }
             
         }
@@ -63,10 +77,23 @@ std::vector<Product*> MyDataStore::search(std::vector<std::string>& terms, int t
         for(size_t i = 0; i < terms.size(); i++){
             if(i == 0){
                 //get set of products that belong to first term
-                firstSet = keyWordProdMapping.find(terms[i])->second;
+                //std::cout << "Is this fine?" << std::endl;
+                if(keyWordProdMapping.find(terms[i]) != keyWordProdMapping.end()) {
+                    firstSet = keyWordProdMapping.find(terms[i])->second;
+                }else{
+                    std::set<Product*> emptySet;
+                    firstSet = emptySet;
+                }
             }else{
                 //find the set of products that includes products under our last and current term
-                firstSet = setUnion(firstSet,keyWordProdMapping.find(terms[i])->second);
+                //std::cout <<"Is this fine?" << std::endl;
+                if(keyWordProdMapping.find(terms[i]) != keyWordProdMapping.end()) {
+                    secondSet = keyWordProdMapping.find(terms[i])->second;
+                }else{
+                    std::set<Product*> emptySet;
+                    secondSet = emptySet;
+                }
+                firstSet = setUnion(firstSet,secondSet);
             }
         }
     }
@@ -118,7 +145,8 @@ bool MyDataStore::userCartAdd(std::string username, int hit_result_idx, std::vec
     std::queue<Product*> temp = it->second;
 
     for(size_t i = 0; i < it->second.size(); i++){
-        std::cout << cartNo << ": " << temp.front()->getName() << std::endl;
+        std::cout << "Product " << cartNo << "\n";
+        std:: cout << temp.front()->displayString() << std::endl;
         temp.pop();
         cartNo++;
     }
@@ -147,23 +175,23 @@ bool MyDataStore::userCartAdd(std::string username, int hit_result_idx, std::vec
 
 
  void MyDataStore::clearUsers() {
-    int len = (int)users.size();
-    for(int i = len-1; i >= 0; i--) {
-        delete products[i];
-        products.pop_back();
+    size_t len = users.size();
+    for(size_t i = 0; i < len; i++) {
+        delete users[i];
     }
+    users.clear();
     //clean up any hanging threads
     std::map<std::string, User*>empty;
     nameAcctLink = empty;
  }
 
  void MyDataStore::clearProducts() {
-    int len = (int)products.size();
+    size_t len = products.size();
     //get rid of our products
-    for(int i = len-1; i >= 0; i--){
+    for(size_t i = 0; i < len; i++){
         delete products[i];
-        products.pop_back();
     }
+    products.clear();
     //clean up any hanging threads
     std::map<std::string, std::set<Product*> > empty;
     keyWordProdMapping = empty;

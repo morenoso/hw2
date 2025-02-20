@@ -105,7 +105,11 @@ int main(int argc, char* argv[])
                 string username;
                 int hitIdx;
                 if( ss >> username >> hitIdx){
-                    if(!ds.userCartAdd(convToLower(username), hitIdx, hits)){
+                    //hitIdx is wrong from USER perspective
+                    //from programmer perspective(starting from 0 is fine)
+                    //but user would put 1, not 0, 
+                    //easy fix, just do hitIdx-1
+                    if(!ds.userCartAdd(convToLower(username), hitIdx-1, hits)){
                         cout << "Invalid request" << endl;
                     }
                 }
@@ -113,20 +117,22 @@ int main(int argc, char* argv[])
             else if( cmd == "VIEWCART" ) {
                 string username;
                 if(ss >> username){
-                    ds.viewCart(username);
+                    if(!ds.viewCart(username)){
+                      cout << "Invalid username" << endl;
+                    }
                 }else {
-                    cout << "Invalid request" << endl;
+                    cout << "Invalid username"  << endl;
                 }
             }
             else if ( cmd == "BUYCART" ) {
                 string username;
                 if(ss >> username) {
                     if(!ds.buyCart(username)){
-                        cout << "Invalid request" << endl;
+                        cout << "Invalid username" << endl;
                     }
 
                 }else {
-                    cout << "Invalid request" << endl;
+                    cout << "Invalid username" << endl;
                 }
             }
             else {
